@@ -1,69 +1,91 @@
 import 'package:flutter/material.dart';
-import 'package:math_expressions/math_expressions.dart';
 
-
-void main() => runApp(const CalculatorApp());
-
-class CalculatorApp extends StatelessWidget {
-  const CalculatorApp({super.key});
+class CalculatorView extends StatefulWidget {
+  const CalculatorView({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return const MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'Calculator App',
-      home: CalculatorScreen(),
-    );
-  }
+  State<CalculatorView> createState() => _CalculatorViewState();
 }
 
-class CalculatorScreen extends StatefulWidget {
-  const CalculatorScreen({super.key});
+class _CalculatorViewState extends State<CalculatorView> {
+  final _textController = TextEditingController();
+  List<String> lstSymbols = [
+    "C",
+    "*",
+    "/",
+    "<-",
+    "1",
+    "2",
+    "3",
+    "+",
+    "4",
+    "5",
+    "6",
+    "-",
+    "7",
+    "8",
+    "9",
+    "*",
+    "%",
+    "0",
+    ".",
+    "=",
+  ];
 
-  @override
-  _CalculatorScreenState createState() => _CalculatorScreenState();
-}
+  double? first;
+  double? second;
+  String? operator;
 
-class _CalculatorScreenState extends State<CalculatorScreen> {
-  String _display = "";
-  String _input = "";
-
-  void _onButtonPressed(String value) {
+  void onSymbolTap(String symbol) {
     setState(() {
-      if (value == "C") {
-        _display = "";
-        _input = "";
-      } else if (value == "<-") {
-        _input = _input.isNotEmpty ? _input.substring(0, _input.length - 1) : "";
-      } else if (value == "=") {
-        try {
-          Parser parser = Parser();
-          Expression expression = parser.parse(_input);
-          ContextModel contextModel = ContextModel();
-          _display = expression.evaluate(EvaluationType.REAL, contextModel).toString();
-        } catch (e) {
-          _display = "Error";
+      if (symbol == "C") {
+        _textController.clear();
+        first = null;
+        second = null;
+        operator = null;
+      } else if (symbol == "<-") {
+        if (_textController.text.isNotEmpty) {
+          _textController.text = _textController.text
+              .substring(0, _textController.text.length - 1);
+        }
+      } else if (symbol == "=") {
+        if (first != null &&
+            operator != null &&
+            _textController.text.isNotEmpty) {
+          second = double.tryParse(_textController.text);
+          double? result;
+          switch (operator) {
+            case "+":
+              result = first! + second!;
+              break;
+            case "-":
+              result = first! - second!;
+              break;
+            case "*":
+              result = first! * second!;
+              break;
+            case "/":
+              result = second != 0 ? first! / second! : double.nan;
+              break;
+            case "%":
+              result = first! % second!;
+              break;
+          }
+          _textController.text = result?.toString() ?? "Error";
+          first = null;
+          second = null;
+          operator = null;
+        }
+      } else if ("+-*/%".contains(symbol)) {
+        if (_textController.text.isNotEmpty) {
+          first = double.tryParse(_textController.text);
+          operator = symbol;
+          _textController.clear();
         }
       } else {
-        _input += value;
+        _textController.text += symbol;
       }
     });
-  }
-
-  Widget _buildButton(String text, Color color) {
-    return Expanded(
-      child: ElevatedButton(
-        onPressed: () => _onButtonPressed(text),
-        style: ElevatedButton.styleFrom(
-          backgroundColor: color,
-          padding: const EdgeInsets.all(20),
-        ),
-        child: Text(
-          text,
-          style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-        ),
-      ),
-    );
   }
 
   @override
@@ -71,78 +93,56 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Calculator App'),
-        centerTitle: true,
       ),
-      body: Column(
-        children: [
-          Expanded(
-            child: Container(
-              alignment: Alignment.centerRight,
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-              color: Colors.grey[200],
-              child: Text(
-                _input.isEmpty ? "0" : _input,
-                style: const TextStyle(fontSize: 36, fontWeight: FontWeight.bold),
+      body: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Column(
+          children: [
+            TextFormField(
+              controller: _textController,
+              readOnly: true,
+              textAlign: TextAlign.right,
+              decoration: const InputDecoration(
+                border: OutlineInputBorder(),
+              ),
+              style: const TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
               ),
             ),
-          ),
-          Expanded(
-            child: Container(
-              alignment: Alignment.centerRight,
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-              color: Colors.white,
-              child: Text(
-                _display,
-                style: const TextStyle(fontSize: 24, color: Colors.black),
+            const SizedBox(height: 8),
+            Expanded(
+              child: GridView.builder(
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 4,
+                  crossAxisSpacing: 8.0,
+                  mainAxisSpacing: 8.0,
+                ),
+                itemCount: lstSymbols.length,
+                itemBuilder: (context, index) {
+                  return GestureDetector(
+                    onTap: () => onSymbolTap(lstSymbols[index]),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.red,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Center(
+                        child: Text(
+                          lstSymbols[index],
+                          style: const TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                },
               ),
             ),
-          ),
-          const Divider(height: 1),
-          Column(
-            children: [
-              Row(
-                children: [
-                  _buildButton("C", Colors.white),
-                  _buildButton("*", Colors.white),
-                  _buildButton("/", Colors.white),
-                  _buildButton("<-", Colors.white),
-                ],
-              ),
-              Row(
-                children: [
-                  _buildButton("7", Colors.white),
-                  _buildButton("8", Colors.white),
-                  _buildButton("9", Colors.white),
-                  _buildButton("+", Colors.white),
-                ],
-              ),
-              Row(
-                children: [
-                  _buildButton("4", Colors.white),
-                  _buildButton("5", Colors.white),
-                  _buildButton("6", Colors.white),
-                  _buildButton("-", Colors.white),
-                ],
-              ),
-              Row(
-                children: [
-                  _buildButton("1", Colors.white),
-                  _buildButton("2", Colors.white),
-                  _buildButton("3", Colors.white),
-                  _buildButton("*", Colors.white),
-                ],
-              ),
-              Row(
-                children: [
-                  _buildButton("%", Colors.white),
-                  _buildButton("0", Colors.white),
-                  _buildButton(".", Colors.white),
-                  _buildButton("=", Colors.white),
-                ],
-              ),
-            ],
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
