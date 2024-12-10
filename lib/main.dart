@@ -1,30 +1,6 @@
-
-// import 'package:flutter/material.dart';
-// import 'package:newproject/app.dart';
-
-// // final
-// // const
-
-// // HOT RELOAD
-// void main() {
-//   runApp(
-//     const MyApp(),
-//   );
-// }
-
 import 'package:flutter/material.dart';
+import 'package:calculator_app/app.dart';
 
-import 'app.dart';
-
-
-
-
-// final
-// const
-
-// HOT RELOAD
 void main() {
-  runApp(
-    const MyApp(),
-  );
+  runApp(const MyApp());
 }
