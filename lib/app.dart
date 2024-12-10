@@ -1,7 +1,5 @@
-
-import 'package:calculator_app/view/calculator_view.dart';
 import 'package:flutter/material.dart';
-
+import 'package:calculator_app/view/calculator_view.dart';
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -10,7 +8,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return const MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: CalculatorApp(),
+      home: CalculatorView(),
     );
   }
 }
